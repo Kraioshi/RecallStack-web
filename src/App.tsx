@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
 
 import { getTopicTree } from './api/topics'
-import type { TopicTree } from './types/topic'
+import { TopicTree } from './components/TopicTree'
+import type { TopicTree as TopicTreeData } from './types/topic'
 
 function App() {
-  const [topics, setTopics] = useState<TopicTree[]>([])
+  const [topics, setTopics] = useState<TopicTreeData[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -46,7 +47,7 @@ function App() {
   return (
       <main>
         <h1>RecallStack</h1>
-        <pre>{JSON.stringify(topics, null, 2)}</pre>
+        <TopicTree topics={topics} />
       </main>
   )
 }
