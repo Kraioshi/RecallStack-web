@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom'
+
 import type { TopicTree as TopicTreeData } from '../types/topic'
 
 interface TopicTreeNodeProps {
@@ -7,7 +9,7 @@ interface TopicTreeNodeProps {
 export function TopicTreeNode({ topic }: TopicTreeNodeProps) {
   return (
     <li>
-      <strong>{topic.name}</strong>
+      <Link to={`/topics/${topic.id}`}>{topic.name}</Link>
 
       {topic.children.length > 0 && (
         <ul>
