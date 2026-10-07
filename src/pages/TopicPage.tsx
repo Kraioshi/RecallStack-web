@@ -1,14 +1,18 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 
-import { getTopic } from '../api/topics'
-import type { Topic } from '../types/topic'
+import { ApiError } from '../api/errors'
+import { getTopic, getTopicContextTree } from '../api/topics'
+import { TopicTree } from '../components/TopicTree'
+import type { Topic, TopicTree as TopicTreeData } from '../types/topic'
 
 export function TopicPage() {
   const { topicId } = useParams<{ topicId: string }>()
 
   const [topic, setTopic] = useState<Topic | null>(null)
+  const [contextTree, setContextTree] = useState<TopicTreeData | null>(null)
   const [loading, setLoading] = useState(true)
+  const [notFound, setNotFound] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -20,10 +24,20 @@ export function TopicPage() {
 
     async function loadTopic(id: string) {
       try {
-        const data = await getTopic(id, controller.signal)
-        setTopic(data)
+        const [topicData, contextTreeData] = await Promise.all([
+          getTopic(id, controller.signal),
+          getTopicContextTree(id, controller.signal),
+        ])
+
+        setTopic(topicData)
+        setContextTree(contextTreeData)
       } catch (error) {
         if (controller.signal.aborted) {
+          return
+        }
+
+        if (error instanceof ApiError && error.status === 404) {
+          setNotFound(true)
           return
         }
 
@@ -50,12 +64,16 @@ export function TopicPage() {
     return <p>Loading topic...</p>
   }
 
+  if (notFound) {
+    return <p>Topic not found.</p>
+  }
+
   if (error) {
     return <p>{error}</p>
   }
 
   if (!topic) {
-    return <p>Topic not found.</p>
+    return <p>Topic data is unavailable.</p>
   }
 
   return (
@@ -79,6 +97,13 @@ export function TopicPage() {
         <dt>Updated</dt>
         <dd>{topic.updated_at}</dd>
       </dl>
+
+      {contextTree && (
+        <>
+          <h2>Topic context</h2>
+          <TopicTree topics={[contextTree]} />
+        </>
+      )}
     </main>
   )
 }
