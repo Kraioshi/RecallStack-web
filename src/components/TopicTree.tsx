@@ -1,13 +1,13 @@
-import { TopicTreeNode } from "./TopicTreeNode";
-import type { TopicTree as TopicTreeData } from "../types/topic";
+import { TopicTreeNode } from './TopicTreeNode'
+import type { TopicTree as TopicTreeData } from '../types/topic'
 
 interface TopicTreeProps {
-  topics: TopicTreeData[];
+  topics: TopicTreeData[]
 }
 
 export function TopicTree({ topics }: TopicTreeProps) {
   if (topics.length === 0) {
-    return <p>No topics yet.</p>;
+    return <p>No topics yet.</p>
   }
 
   return (
@@ -16,5 +16,5 @@ export function TopicTree({ topics }: TopicTreeProps) {
         <TopicTreeNode key={topic.id} topic={topic} />
       ))}
     </ul>
-  );
+  )
 }

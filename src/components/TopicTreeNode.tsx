@@ -1,7 +1,7 @@
-import type { TopicTree as TopicTreeData } from "../types/topic";
+import type { TopicTree as TopicTreeData } from '../types/topic'
 
 interface TopicTreeNodeProps {
-  topic: TopicTreeData;
+  topic: TopicTreeData
 }
 
 export function TopicTreeNode({ topic }: TopicTreeNodeProps) {
@@ -17,5 +17,5 @@ export function TopicTreeNode({ topic }: TopicTreeNodeProps) {
         </ul>
       )}
     </li>
-  );
+  )
 }
