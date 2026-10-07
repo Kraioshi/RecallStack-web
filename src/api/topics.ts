@@ -1,4 +1,5 @@
 import type { Topic, TopicTree } from '../types/topic'
+import { ApiError } from './errors'
 
 const API_URL = import.meta.env.VITE_API_URL
 
@@ -9,7 +10,8 @@ export async function getRootTopics(signal?: AbortSignal): Promise<Topic[]> {
   })
 
   if (!response.ok) {
-    throw new Error(
+    throw new ApiError(
+      response.status,
       `Failed to fetch root topics: ${response.status} ${response.statusText}`,
     )
   }
@@ -27,7 +29,8 @@ export async function getTopic(
   })
 
   if (!response.ok) {
-    throw new Error(
+    throw new ApiError(
+      response.status,
       `Failed to fetch topic: ${response.status} ${response.statusText}`,
     )
   }
@@ -42,13 +45,15 @@ export async function getTopicTree(signal?: AbortSignal): Promise<TopicTree[]> {
   })
 
   if (!response.ok) {
-    throw new Error(
+    throw new ApiError(
+      response.status,
       `Failed to fetch topic tree: ${response.status} ${response.statusText}`,
     )
   }
 
   return response.json()
 }
+
 // GET /api/topics/{topic_id}/tree
 export async function getTopicContextTree(
   topicId: string,
@@ -59,7 +64,8 @@ export async function getTopicContextTree(
   })
 
   if (!response.ok) {
-    throw new Error(
+    throw new ApiError(
+      response.status,
       `Failed to fetch topic context tree: ${response.status} ${response.statusText}`,
     )
   }
@@ -77,7 +83,8 @@ export async function getTopicChildren(
   })
 
   if (!response.ok) {
-    throw new Error(
+    throw new ApiError(
+      response.status,
       `Failed to fetch topic children: ${response.status} ${response.statusText}`,
     )
   }
