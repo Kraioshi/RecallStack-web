@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom'
 
 import { ApiError } from '../api/errors'
 import { getTopic, getTopicContextTree } from '../api/topics'
+import { QuestionList } from '../components/QuestionList'
 import { TopicTree } from '../components/TopicTree'
 import type { Topic, TopicTree as TopicTreeData } from '../types/topic'
 
@@ -104,6 +105,8 @@ export function TopicPage() {
           <TopicTree topics={[contextTree]} />
         </>
       )}
+
+      <QuestionList key={topic.id} topicId={topic.id} />
     </main>
   )
 }
