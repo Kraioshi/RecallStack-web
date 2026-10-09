@@ -64,3 +64,88 @@
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
+
+.questions-section__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.question-create-panel {
+  margin: 1rem 0;
+  padding: 1.25rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  text-align: left;
+}
+
+.question-create-panel h3 {
+  margin: 0 0 1rem;
+  color: var(--text-h);
+}
+
+.question-form {
+  display: grid;
+  gap: 1rem;
+}
+
+.question-form__field {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.question-form__field label {
+  color: var(--text-h);
+}
+
+.question-form textarea,
+.question-form select {
+  box-sizing: border-box;
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.6rem;
+  background: var(--bg);
+  color: var(--text-h);
+  font: inherit;
+}
+
+.question-form__actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.question-form__actions button,
+.question-create-button {
+  cursor: pointer;
+  border: 1px solid var(--accent-border);
+  border-radius: 6px;
+  padding: 0.5rem 0.85rem;
+  background: var(--accent-bg);
+  color: var(--text-h);
+  font: inherit;
+}
+
+.question-form__actions .question-form__primary {
+  background: var(--accent);
+  color: #fff;
+}
+
+.question-form__actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.question-form__error {
+  color: #b91c1c;
+}
+
+.question-form textarea:focus-visible,
+.question-form select:focus-visible,
+.question-form__actions button:focus-visible,
+.question-create-button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}

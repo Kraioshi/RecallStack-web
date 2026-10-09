@@ -2,7 +2,10 @@ import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 
 import { ApiError } from '../api/errors'
+import { createQuestion } from '../api/questions'
 import { getTopic, getTopicContextTree } from '../api/topics'
+import { QuestionForm } from '../components/QuestionForm'
+import type { QuestionFormValues } from '../components/QuestionForm'
 import { QuestionList } from '../components/QuestionList'
 import { TopicTree } from '../components/TopicTree'
 import type { Topic, TopicTree as TopicTreeData } from '../types/topic'
@@ -15,6 +18,9 @@ export function TopicPage() {
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [creatingQuestion, setCreatingQuestion] = useState(false)
+  const [questionListVersion, setQuestionListVersion] = useState(0)
+  const [creationNotice, setCreationNotice] = useState<string | null>(null)
 
   useEffect(() => {
     if (!topicId) {
@@ -56,6 +62,26 @@ export function TopicPage() {
       controller.abort()
     }
   }, [topicId])
+
+  async function handleCreateQuestion(
+    values: QuestionFormValues,
+  ): Promise<void> {
+    if (!topic) throw new Error('Topic is unavailable.')
+
+    await createQuestion({ topicId: topic.id, ...values })
+
+    setCreatingQuestion(false)
+    setCreationNotice('Question created successfully.')
+    // Remount the list to reuse its existing loading and fetching behavior.
+    setQuestionListVersion((version) => version + 1)
+
+    // A count refresh failing must not turn a successful POST into a form error.
+    void getTopicContextTree(topic.id)
+      .then(setContextTree)
+      .catch(() => {
+        setCreationNotice('Question created. Reload to refresh topic counts.')
+      })
+  }
 
   if (!topicId) {
     return <p>Topic ID is missing.</p>
@@ -110,7 +136,37 @@ export function TopicPage() {
         </>
       )}
 
-      <QuestionList key={topic.id} topicId={topic.id} />
+      <QuestionList
+        key={`${topic.id}-${questionListVersion}`}
+        topicId={topic.id}
+        actions={
+          !creatingQuestion && (
+            <button
+              className="question-create-button"
+              type="button"
+              onClick={() => {
+                setCreationNotice(null)
+                setCreatingQuestion(true)
+              }}
+            >
+              Add question
+            </button>
+          )
+        }
+      >
+        {creationNotice && <p role="status">{creationNotice}</p>}
+
+        {creatingQuestion && (
+          <div className="question-create-panel">
+            <h3>New question for {topic.name}</h3>
+            <QuestionForm
+              onSubmit={handleCreateQuestion}
+              onCancel={() => setCreatingQuestion(false)}
+              submitLabel="Create question"
+            />
+          </div>
+        )}
+      </QuestionList>
     </main>
   )
 }

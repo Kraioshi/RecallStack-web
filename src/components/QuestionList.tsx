@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import type { ReactNode } from 'react'
 
 import { getQuestionsByTopic } from '../api/questions'
 import type { Question } from '../types/question'
@@ -8,9 +9,15 @@ import './questions.css'
 
 interface QuestionListProps {
   topicId: string
+  actions?: ReactNode
+  children?: ReactNode
 }
 
-export function QuestionList({ topicId }: QuestionListProps) {
+export function QuestionList({
+  topicId,
+  actions,
+  children,
+}: QuestionListProps) {
   const [questions, setQuestions] = useState<Question[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -44,7 +51,12 @@ export function QuestionList({ topicId }: QuestionListProps) {
 
   return (
     <section className="questions-section" aria-labelledby="questions-heading">
-      <h2 id="questions-heading">Questions</h2>
+      <div className="questions-section__header">
+        <h2 id="questions-heading">Questions</h2>
+        {actions}
+      </div>
+
+      {children}
 
       {loading ? (
         <p>Loading questions...</p>
