@@ -111,3 +111,9 @@
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
+
+.practice-page__availability {
+  margin: 0.75rem 0 0;
+  color: var(--text);
+  font-size: 0.9rem;
+}
