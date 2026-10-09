@@ -8,11 +8,10 @@
 }
 
 .practice-page h1 {
-  margin: 1.25rem 0 0.5rem;
-}
-
-.practice-page__intro {
-  margin-bottom: 1.5rem;
+  font-size: clamp(2rem, 4vw, 3rem);
+  line-height: 1.2;
+  margin: 1.25rem 0 1.5rem;
+  overflow-wrap: break-word;
 }
 
 .practice-filters {
