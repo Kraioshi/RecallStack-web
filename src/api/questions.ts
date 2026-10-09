@@ -1,4 +1,4 @@
-import type { Question } from '../types/question'
+import type { Question, QuestionDifficulty } from '../types/question'
 import { ApiError } from './errors'
 
 const API_URL = import.meta.env.VITE_API_URL
@@ -17,6 +17,51 @@ export async function getQuestionsByTopic(
     throw new ApiError(
       response.status,
       `Failed to fetch questions: ${response.status} ${response.statusText}`,
+    )
+  }
+
+  return response.json()
+}
+
+// Translate to FastAPI query params here.
+export interface RandomQuestionOptions {
+  topicId?: string
+  difficulty?: QuestionDifficulty
+  includeDescendants?: boolean
+  excludeId?: string
+}
+
+// GET /api/questions/random
+export async function getRandomQuestion(
+  options: RandomQuestionOptions = {},
+  signal?: AbortSignal,
+): Promise<Question> {
+  const params = new URLSearchParams()
+
+  if (options.topicId) {
+    params.set('topic_id', options.topicId)
+  }
+
+  if (options.difficulty) {
+    params.set('difficulty', options.difficulty)
+  }
+
+  if (options.includeDescendants !== undefined) {
+    params.set('include_descendants', String(options.includeDescendants))
+  }
+
+  if (options.excludeId) {
+    params.set('exclude_id', options.excludeId)
+  }
+
+  const query = params.toString()
+  const url = `${API_URL}/api/questions/random${query ? `?${query}` : ''}`
+  const response = await fetch(url, { signal })
+
+  if (!response.ok) {
+    throw new ApiError(
+      response.status,
+      `Failed to fetch a random question: ${response.status} ${response.statusText}`,
     )
   }
 
