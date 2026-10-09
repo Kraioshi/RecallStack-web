@@ -161,11 +161,6 @@ function PracticeSession({ topicId }: { topicId?: string }) {
           : 'Practice all topics'}
       </h1>
 
-      <p className="practice-page__intro">
-        Select your preferences, try answering each question, then reveal its
-        answer.
-      </p>
-
       <PracticeFilters
         difficulty={difficulty}
         includeDescendants={includeDescendants}
