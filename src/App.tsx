@@ -1,5 +1,6 @@
 import { Route, Routes, useParams } from 'react-router-dom'
 
+import { PracticePage } from './pages/PracticePage'
 import { TopicPage } from './pages/TopicPage'
 import { TopicsPage } from './pages/TopicsPage'
 
@@ -14,6 +15,7 @@ function App() {
     <Routes>
       <Route path="/" element={<TopicsPage />} />
       <Route path="/topics/:topicId" element={<TopicRoute />} />
+      <Route path="/practice" element={<PracticePage />} />
     </Routes>
   )
 }
