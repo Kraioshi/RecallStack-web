@@ -67,3 +67,36 @@ export async function getRandomQuestion(
 
   return response.json()
 }
+
+// Request input for POST /api/questions.
+// Keep the React-facing API in camelCase and translate at the boundary.
+export interface CreateQuestionInput {
+  topicId: string
+  question: string
+  answer: string
+  difficulty: QuestionDifficulty
+}
+
+export async function createQuestion(
+  input: CreateQuestionInput,
+): Promise<Question> {
+  const response = await fetch(`${API_URL}/api/questions`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      topic_id: input.topicId,
+      question: input.question,
+      answer: input.answer,
+      difficulty: input.difficulty,
+    }),
+  })
+
+  if (!response.ok) {
+    throw new ApiError(
+      response.status,
+      `Failed to create question: ${response.status} ${response.statusText}`,
+    )
+  }
+
+  return response.json()
+}
