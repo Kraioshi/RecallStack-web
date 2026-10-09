@@ -92,6 +92,13 @@ export async function createQuestion(
   })
 
   if (!response.ok) {
+    if (response.status === 409) {
+      throw new ApiError(
+        response.status,
+        'A question with this text already exists in this topic.',
+      )
+    }
+
     throw new ApiError(
       response.status,
       `Failed to create question: ${response.status} ${response.statusText}`,
