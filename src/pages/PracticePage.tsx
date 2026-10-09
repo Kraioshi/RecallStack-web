@@ -3,9 +3,11 @@ import { Link, useSearchParams } from 'react-router-dom'
 
 import { ApiError } from '../api/errors'
 import { getRandomQuestion } from '../api/questions'
+import { getTopicTree } from '../api/topics'
 import { PracticeCard } from '../components/PracticeCard'
 import { PracticeFilters } from '../components/PracticeFilters'
 import type { Question, QuestionDifficulty } from '../types/question'
+import type { QuestionCounts, TopicTree } from '../types/topic'
 
 import './practice.css'
 
@@ -15,21 +17,85 @@ type QuestionRequest = {
   excludeId?: string
 }
 
+function findTopic(topics: TopicTree[], topicId: string): TopicTree | null {
+  for (const topic of topics) {
+    if (topic.id === topicId) return topic
+
+    const found = findTopic(topic.children, topicId)
+    if (found) return found
+  }
+
+  return null
+}
+
+// The backend returns counts for each individual topic, not its descendants.
+function sumQuestionCounts(topics: TopicTree[]): QuestionCounts {
+  const counts: QuestionCounts = { easy: 0, medium: 0, hard: 0, total: 0 }
+
+  function visit(topic: TopicTree) {
+    counts.easy += topic.question_counts.easy
+    counts.medium += topic.question_counts.medium
+    counts.hard += topic.question_counts.hard
+    counts.total += topic.question_counts.total
+
+    topic.children.forEach(visit)
+  }
+
+  topics.forEach(visit)
+  return counts
+}
+
 export function PracticePage() {
   const [searchParams] = useSearchParams()
   const topicId = searchParams.get('topic_id') || undefined
 
+  // A different topic should start a fresh practice session.
+  return <PracticeSession key={topicId ?? 'all'} topicId={topicId} />
+}
+
+function PracticeSession({ topicId }: { topicId?: string }) {
   const [difficulty, setDifficulty] = useState<QuestionDifficulty | ''>('')
   const [includeDescendants, setIncludeDescendants] = useState(true)
 
   const [question, setQuestion] = useState<Question | null>(null)
   const [status, setStatus] = useState<PracticeStatus>('loading')
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
-
-  // Each new request object triggers the fetching effect.
   const [request, setRequest] = useState<QuestionRequest>({})
 
-  // Prepare the UI for a new question request.
+  const [topicTree, setTopicTree] = useState<TopicTree[] | null>(null)
+  const [countsError, setCountsError] = useState(false)
+
+  // Fetch the topic tree once per practice session for names and counts.
+  useEffect(() => {
+    const controller = new AbortController()
+
+    getTopicTree(controller.signal)
+      .then((tree) => {
+        if (!controller.signal.aborted) setTopicTree(tree)
+      })
+      .catch(() => {
+        if (!controller.signal.aborted) setCountsError(true)
+      })
+
+    return () => controller.abort()
+  }, [])
+
+  const selectedTopic =
+    topicId && topicTree ? findTopic(topicTree, topicId) : null
+
+  // Derive these values rather than storing another copy in React state.
+  const counts: QuestionCounts | null = !topicTree
+    ? null
+    : !topicId
+      ? sumQuestionCounts(topicTree)
+      : !selectedTopic
+        ? null
+        : includeDescendants
+          ? sumQuestionCounts([selectedTopic])
+          : selectedTopic.question_counts
+
+  const availableCount = counts ? counts[difficulty || 'total'] : null
+
   function beginLoading(excludeId?: string) {
     setStatus('loading')
     setErrorMessage(null)
@@ -46,7 +112,7 @@ export function PracticePage() {
     setIncludeDescendants(value)
   }
 
-  // Fetch on initial mount and whenever filters or request change.
+  // Start the HTTP request in an effect; update React state after it settles.
   useEffect(() => {
     const controller = new AbortController()
 
@@ -80,7 +146,6 @@ export function PracticePage() {
         }
       })
 
-    // Cancel the previous request when dependencies change.
     return () => controller.abort()
   }, [topicId, difficulty, includeDescendants, request])
 
@@ -88,7 +153,13 @@ export function PracticePage() {
     <main className="practice-page">
       <Link to={topicId ? `/topics/${topicId}` : '/'}>← Back to topics</Link>
 
-      <h1>{topicId ? 'Practice this topic' : 'Practice all topics'}</h1>
+      <h1>
+        {topicId
+          ? selectedTopic
+            ? `Practice: ${selectedTopic.name}`
+            : 'Practice this topic'
+          : 'Practice all topics'}
+      </h1>
 
       <p className="practice-page__intro">
         Select your preferences, try answering each question, then reveal its
@@ -99,9 +170,20 @@ export function PracticePage() {
         difficulty={difficulty}
         includeDescendants={includeDescendants}
         showDescendants={Boolean(topicId)}
+        questionCounts={counts}
         onDifficultyChange={handleDifficultyChange}
         onIncludeDescendantsChange={handleIncludeDescendantsChange}
       />
+
+      <p className="practice-page__availability" role="status">
+        {availableCount !== null
+          ? `${availableCount} ${availableCount === 1 ? 'question' : 'questions'} available with these filters`
+          : countsError
+            ? 'Question counts are unavailable; practice still works.'
+            : topicTree && topicId && !selectedTopic
+              ? 'This topic was not found in the topic tree.'
+              : 'Loading question counts...'}
+      </p>
 
       <section className="practice-session" aria-live="polite">
         {status === 'loading' && <p role="status">Loading a question...</p>}
@@ -109,7 +191,6 @@ export function PracticePage() {
         {status === 'ready' && question && (
           <>
             <PracticeCard key={question.id} question={question} />
-
             <button
               className="practice-button"
               type="button"
@@ -127,9 +208,7 @@ export function PracticePage() {
                 ? 'No other question matches these filters.'
                 : 'No questions match these filters.'}
             </p>
-
             <p>Try another difficulty or include subtopics if available.</p>
-
             {request.excludeId && (
               <button
                 className="practice-button"
@@ -145,7 +224,6 @@ export function PracticePage() {
         {status === 'error' && (
           <div className="practice-message" role="alert">
             <p>{errorMessage ?? 'Could not load a question.'}</p>
-
             <button
               className="practice-button"
               type="button"

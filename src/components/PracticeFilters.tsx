@@ -1,9 +1,11 @@
 import type { QuestionDifficulty } from '../types/question'
+import type { QuestionCounts } from '../types/topic'
 
 interface PracticeFiltersProps {
   difficulty: QuestionDifficulty | ''
   includeDescendants: boolean
   showDescendants: boolean
+  questionCounts: QuestionCounts | null
   onDifficultyChange: (value: QuestionDifficulty | '') => void
   onIncludeDescendantsChange: (value: boolean) => void
 }
@@ -12,6 +14,7 @@ export function PracticeFilters({
   difficulty,
   includeDescendants,
   showDescendants,
+  questionCounts,
   onDifficultyChange,
   onIncludeDescendantsChange,
 }: PracticeFiltersProps) {
@@ -25,10 +28,18 @@ export function PracticeFilters({
             onDifficultyChange(event.target.value as QuestionDifficulty | '')
           }
         >
-          <option value="">All difficulties</option>
-          <option value="easy">Easy</option>
-          <option value="medium">Medium</option>
-          <option value="hard">Hard</option>
+          <option value="">
+            All difficulties{questionCounts ? ` (${questionCounts.total})` : ''}
+          </option>
+          <option value="easy">
+            Easy{questionCounts ? ` (${questionCounts.easy})` : ''}
+          </option>
+          <option value="medium">
+            Medium{questionCounts ? ` (${questionCounts.medium})` : ''}
+          </option>
+          <option value="hard">
+            Hard{questionCounts ? ` (${questionCounts.hard})` : ''}
+          </option>
         </select>
       </label>
 
