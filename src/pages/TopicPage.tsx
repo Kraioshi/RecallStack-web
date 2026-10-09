@@ -85,6 +85,10 @@ export function TopicPage() {
 
       <p>{topic.description ?? 'No description.'}</p>
 
+      <p>
+        <Link to={`/practice?topic_id=${topic.id}`}>Practice this topic →</Link>
+      </p>
+
       <dl>
         <dt>Slug</dt>
         <dd>{topic.slug}</dd>

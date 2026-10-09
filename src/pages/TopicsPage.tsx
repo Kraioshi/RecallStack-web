@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 
 import { getTopicTree } from '../api/topics'
 import { TopicTree } from '../components/TopicTree'
@@ -47,6 +48,9 @@ export function TopicsPage() {
   return (
     <main>
       <h1>RecallStack</h1>
+      <p>
+        <Link to="/practice">Practice all topics →</Link>
+      </p>
       <TopicTree topics={topics} />
     </main>
   )
