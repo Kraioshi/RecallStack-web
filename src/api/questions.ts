@@ -130,3 +130,51 @@ export async function deleteQuestion(questionId: string): Promise<void> {
 
   // The backend returns 204 No Content; there is no JSON body to parse.
 }
+
+// PATCH /api/questions/{question_id}
+// Every property is optional because the backend supports partial updates.
+export interface UpdateQuestionInput {
+  topicId?: string
+  question?: string
+  answer?: string
+  difficulty?: QuestionDifficulty
+}
+
+export async function updateQuestion(
+  questionId: string,
+  input: UpdateQuestionInput,
+): Promise<Question> {
+  const response = await fetch(`${API_URL}/api/questions/${questionId}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      ...(input.topicId !== undefined && { topic_id: input.topicId }),
+      ...(input.question !== undefined && { question: input.question }),
+      ...(input.answer !== undefined && { answer: input.answer }),
+      ...(input.difficulty !== undefined && { difficulty: input.difficulty }),
+    }),
+  })
+
+  if (!response.ok) {
+    if (response.status === 409) {
+      throw new ApiError(
+        response.status,
+        'A question with this text already exists in the selected topic.',
+      )
+    }
+
+    if (response.status === 404) {
+      throw new ApiError(
+        response.status,
+        'Question or destination topic not found.',
+      )
+    }
+
+    throw new ApiError(
+      response.status,
+      `Failed to update question: ${response.status} ${response.statusText}`,
+    )
+  }
+
+  return response.json()
+}

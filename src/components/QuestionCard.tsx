@@ -5,13 +5,17 @@ import type { Question } from '../types/question'
 interface QuestionCardProps {
   question: Question
   onDelete?: (question: Question) => void
+  onEdit?: (question: Question) => void
   deleting?: boolean
+  actionsDisabled?: boolean
 }
 
 export function QuestionCard({
   question,
   onDelete,
+  onEdit,
   deleting = false,
+  actionsDisabled = false,
 }: QuestionCardProps) {
   const [answerVisible, setAnswerVisible] = useState(false)
 
@@ -44,11 +48,22 @@ export function QuestionCard({
           {answerVisible ? 'Hide answer' : 'Reveal answer'}
         </button>
 
+        {onEdit && (
+          <button
+            className="question-card__toggle"
+            type="button"
+            disabled={actionsDisabled || deleting}
+            onClick={() => onEdit(question)}
+          >
+            Edit
+          </button>
+        )}
+
         {onDelete && (
           <button
             className="question-card__delete"
             type="button"
-            disabled={deleting}
+            disabled={actionsDisabled || deleting}
             onClick={() => onDelete(question)}
           >
             {deleting ? 'Deleting...' : 'Delete'}

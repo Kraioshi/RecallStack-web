@@ -9,12 +9,20 @@ export interface QuestionFormValues {
   question: string
   answer: string
   difficulty: QuestionDifficulty
+  topicId?: string
+}
+
+export interface QuestionFormTopicOption {
+  id: string
+  label: string
 }
 
 interface QuestionFormProps {
   onSubmit: (values: QuestionFormValues) => Promise<void>
   onCancel: () => void
   initialValues?: QuestionFormValues
+  initialTopicId?: string
+  topicOptions?: QuestionFormTopicOption[]
   submitLabel?: string
 }
 
@@ -22,6 +30,8 @@ export function QuestionForm({
   onSubmit,
   onCancel,
   initialValues,
+  initialTopicId,
+  topicOptions,
   submitLabel = 'Save question',
 }: QuestionFormProps) {
   const id = useId()
@@ -30,6 +40,7 @@ export function QuestionForm({
   const [difficulty, setDifficulty] = useState<QuestionDifficulty>(
     initialValues?.difficulty ?? 'medium',
   )
+  const [selectedTopicId, setSelectedTopicId] = useState(initialTopicId ?? '')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -44,6 +55,11 @@ export function QuestionForm({
       return
     }
 
+    if (topicOptions && !selectedTopicId) {
+      setError('Please choose a topic.')
+      return
+    }
+
     setError(null)
     setSubmitting(true)
 
@@ -52,6 +68,7 @@ export function QuestionForm({
         question: trimmedQuestion,
         answer: trimmedAnswer,
         difficulty,
+        ...(topicOptions ? { topicId: selectedTopicId } : {}),
       })
     } catch (error) {
       setError(
@@ -106,6 +123,25 @@ export function QuestionForm({
           <option value="hard">Hard</option>
         </select>
       </div>
+
+      {topicOptions && (
+        <div className="question-form__field">
+          <label htmlFor={`${id}-topic`}>Topic</label>
+          <select
+            id={`${id}-topic`}
+            value={selectedTopicId}
+            onChange={(event) => setSelectedTopicId(event.target.value)}
+            disabled={submitting}
+            required
+          >
+            {topicOptions.map((topic) => (
+              <option key={topic.id} value={topic.id}>
+                {topic.label}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
 
       {error && (
         <p role="alert" className="question-form__error">
