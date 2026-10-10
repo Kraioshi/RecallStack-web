@@ -18,6 +18,11 @@ type IconName =
   | 'refresh'
   | 'bolt'
   | 'plus'
+  | 'eye'
+  | 'eye-off'
+  | 'edit'
+  | 'trash'
+  | 'alert-circle'
 
 interface AppIconProps extends SVGProps<SVGSVGElement> {
   name: IconName
@@ -91,6 +96,36 @@ export function AppIcon({ name, size = 20, ...props }: AppIconProps) {
     ),
     bolt: <path d="m13.3 2-9.1 11h7l-1 9 9.6-12h-7L13.3 2Z" />,
     plus: <path d="M12 5v14M5 12h14" />,
+    eye: (
+      <>
+        <path d="M2 12s3.7-7 10-7 10 7 10 7-3.7 7-10 7S2 12 2 12Z" />
+        <circle cx="12" cy="12" r="3" />
+      </>
+    ),
+    'eye-off': (
+      <>
+        <path d="M9.8 5.3A11 11 0 0 1 12 5c6.3 0 10 7 10 7a14.7 14.7 0 0 1-3.2 3.8" />
+        <path d="M6.5 6.6C3.7 8.4 2 12 2 12s3.7 7 10 7a10.8 10.8 0 0 0 4.1-.8" />
+        <path d="M10 10a3 3 0 0 0 4 4M3 3l18 18" />
+      </>
+    ),
+    edit: (
+      <>
+        <path d="M12 5H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7" />
+        <path d="m14 5 5 5M9 15l-1 3 3-1L21 7a2.1 2.1 0 0 0-3-3L9 15Z" />
+      </>
+    ),
+    trash: (
+      <>
+        <path d="M4 7h16M10 4h4M6 7l1 14h10l1-14M10 11v6M14 11v6" />
+      </>
+    ),
+    'alert-circle': (
+      <>
+        <circle cx="12" cy="12" r="10" />
+        <path d="M12 7v6M12 17h.01" />
+      </>
+    ),
     refresh: (
       <>
         <path d="M20 11a8 8 0 1 0-2 6" />

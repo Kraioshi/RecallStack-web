@@ -2,6 +2,7 @@ import { useId, useState } from 'react'
 import type { FormEvent } from 'react'
 
 import type { QuestionDifficulty } from '../types/question'
+import { AppIcon } from './AppIcon'
 
 import './questions.css'
 
@@ -25,6 +26,12 @@ interface QuestionFormProps {
   topicOptions?: QuestionFormTopicOption[]
   submitLabel?: string
 }
+
+const difficultyOptions: { value: QuestionDifficulty; label: string }[] = [
+  { value: 'easy', label: 'Easy' },
+  { value: 'medium', label: 'Medium' },
+  { value: 'hard', label: 'Hard' },
+]
 
 export function QuestionForm({
   onSubmit,
@@ -90,6 +97,7 @@ export function QuestionForm({
           id={`${id}-question`}
           required
           rows={3}
+          placeholder="What concept do you want to remember?"
           value={question}
           onChange={(event) => setQuestion(event.target.value)}
           disabled={submitting}
@@ -102,27 +110,41 @@ export function QuestionForm({
           id={`${id}-answer`}
           required
           rows={5}
+          placeholder="Write a clear explanation. Line breaks are preserved."
           value={answer}
           onChange={(event) => setAnswer(event.target.value)}
           disabled={submitting}
         />
+        <span className="question-form__hint">
+          Keep it useful for future review. Formatting and line breaks are
+          preserved.
+        </span>
       </div>
 
-      <div className="question-form__field">
-        <label htmlFor={`${id}-difficulty`}>Difficulty</label>
-        <select
-          id={`${id}-difficulty`}
-          value={difficulty}
-          onChange={(event) =>
-            setDifficulty(event.target.value as QuestionDifficulty)
-          }
-          disabled={submitting}
-        >
-          <option value="easy">Easy</option>
-          <option value="medium">Medium</option>
-          <option value="hard">Hard</option>
-        </select>
-      </div>
+      <fieldset className="question-form__difficulty-field">
+        <legend>Difficulty</legend>
+        <div className="question-form__difficulty-options">
+          {difficultyOptions.map((option) => (
+            <label
+              key={option.value}
+              className={`question-form__difficulty-choice question-form__difficulty-choice--${option.value}${difficulty === option.value ? ' question-form__difficulty-choice--selected' : ''}`}
+            >
+              <input
+                type="radio"
+                name={`${id}-difficulty`}
+                value={option.value}
+                checked={difficulty === option.value}
+                onChange={() => setDifficulty(option.value)}
+                disabled={submitting}
+              />
+              <span
+                className={`question-form__difficulty-dot question-form__difficulty-dot--${option.value}`}
+              />
+              {option.label}
+            </label>
+          ))}
+        </div>
+      </fieldset>
 
       {topicOptions && (
         <div className="question-form__field">
@@ -140,24 +162,33 @@ export function QuestionForm({
               </option>
             ))}
           </select>
+          <span className="question-form__hint">
+            Moving the question to another topic will remove it from this list.
+          </span>
         </div>
       )}
 
       {error && (
         <p role="alert" className="question-form__error">
-          {error}
+          <AppIcon name="alert-circle" size={17} />
+          <span>{error}</span>
         </p>
       )}
 
       <div className="question-form__actions">
         <button
-          className="question-form__primary"
+          className="ui-button ui-button--primary question-form__primary"
           type="submit"
           disabled={submitting}
         >
           {submitting ? 'Saving...' : submitLabel}
         </button>
-        <button type="button" onClick={onCancel} disabled={submitting}>
+        <button
+          className="ui-button ui-button--secondary"
+          type="button"
+          onClick={onCancel}
+          disabled={submitting}
+        >
           Cancel
         </button>
       </div>

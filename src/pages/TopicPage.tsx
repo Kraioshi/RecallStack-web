@@ -157,13 +157,15 @@ export function TopicPage() {
         <QuestionList
           key={`${topic.id}-${questionListVersion}`}
           topicId={topic.id}
+          interactionLocked={creatingQuestion}
           onQuestionDeleted={handleQuestionDeleted}
           onQuestionUpdated={handleQuestionUpdated}
-          actions={
+          actions={(busy) =>
             !creatingQuestion && (
               <button
                 className="ui-button ui-button--primary topic-page__add-button"
                 type="button"
+                disabled={busy}
                 onClick={() => {
                   setQuestionNotice(null)
                   setCreatingQuestion(true)
