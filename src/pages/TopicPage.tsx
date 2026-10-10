@@ -68,7 +68,7 @@ export function TopicPage() {
   ): Promise<void> {
     if (!topic) throw new Error('Topic is unavailable.')
 
-    await createQuestion({ topicId: topic.id, ...values })
+    await createQuestion({ ...values, topicId: topic.id })
 
     setCreatingQuestion(false)
     setQuestionNotice('Question created successfully.')
@@ -93,6 +93,19 @@ export function TopicPage() {
       .then(setContextTree)
       .catch(() => {
         setQuestionNotice('Question deleted. Reload to refresh topic counts.')
+      })
+  }
+
+  function handleQuestionUpdated(): void {
+    if (!topic) return
+
+    setQuestionNotice('Question updated successfully.')
+
+    // Refresh difficulty counts even when the question stays in this topic.
+    void getTopicContextTree(topic.id)
+      .then(setContextTree)
+      .catch(() => {
+        setQuestionNotice('Question updated. Reload to refresh topic counts.')
       })
   }
 
@@ -153,6 +166,7 @@ export function TopicPage() {
         key={`${topic.id}-${questionListVersion}`}
         topicId={topic.id}
         onQuestionDeleted={handleQuestionDeleted}
+        onQuestionUpdated={handleQuestionUpdated}
         actions={
           !creatingQuestion && (
             <button
