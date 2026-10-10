@@ -29,6 +29,18 @@ export function findTopicIdPath(topics: TopicTree[], id?: string): string[] {
   return []
 }
 
+/** Returns the root-to-topic nodes for navigation and breadcrumbs. */
+export function findTopicPath(topics: TopicTree[], id: string): TopicTree[] {
+  for (const topic of topics) {
+    if (topic.id === id) return [topic]
+
+    const childPath = findTopicPath(topic.children, id)
+    if (childPath.length > 0) return [topic, ...childPath]
+  }
+
+  return []
+}
+
 /** Include matching nodes and the ancestors needed to navigate to them. */
 export function filterTopicTree(
   topics: TopicTree[],
