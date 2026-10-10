@@ -107,3 +107,26 @@ export async function createQuestion(
 
   return response.json()
 }
+
+// DELETE /api/questions/{question_id}
+export async function deleteQuestion(questionId: string): Promise<void> {
+  const response = await fetch(`${API_URL}/api/questions/${questionId}`, {
+    method: 'DELETE',
+  })
+
+  if (!response.ok) {
+    if (response.status === 404) {
+      throw new ApiError(
+        response.status,
+        'Question not found. It may already have been deleted.',
+      )
+    }
+
+    throw new ApiError(
+      response.status,
+      `Failed to delete question: ${response.status} ${response.statusText}`,
+    )
+  }
+
+  // The backend returns 204 No Content; there is no JSON body to parse.
+}

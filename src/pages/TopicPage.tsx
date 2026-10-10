@@ -20,7 +20,7 @@ export function TopicPage() {
   const [error, setError] = useState<string | null>(null)
   const [creatingQuestion, setCreatingQuestion] = useState(false)
   const [questionListVersion, setQuestionListVersion] = useState(0)
-  const [creationNotice, setCreationNotice] = useState<string | null>(null)
+  const [questionNotice, setQuestionNotice] = useState<string | null>(null)
 
   useEffect(() => {
     if (!topicId) {
@@ -71,7 +71,7 @@ export function TopicPage() {
     await createQuestion({ topicId: topic.id, ...values })
 
     setCreatingQuestion(false)
-    setCreationNotice('Question created successfully.')
+    setQuestionNotice('Question created successfully.')
     // Remount the list to reuse its existing loading and fetching behavior.
     setQuestionListVersion((version) => version + 1)
 
@@ -79,7 +79,20 @@ export function TopicPage() {
     void getTopicContextTree(topic.id)
       .then(setContextTree)
       .catch(() => {
-        setCreationNotice('Question created. Reload to refresh topic counts.')
+        setQuestionNotice('Question created. Reload to refresh topic counts.')
+      })
+  }
+
+  function handleQuestionDeleted(): void {
+    if (!topic) return
+
+    setQuestionNotice('Question deleted successfully.')
+
+    // Refresh tree counts; deleting a question has already succeeded.
+    void getTopicContextTree(topic.id)
+      .then(setContextTree)
+      .catch(() => {
+        setQuestionNotice('Question deleted. Reload to refresh topic counts.')
       })
   }
 
@@ -139,13 +152,14 @@ export function TopicPage() {
       <QuestionList
         key={`${topic.id}-${questionListVersion}`}
         topicId={topic.id}
+        onQuestionDeleted={handleQuestionDeleted}
         actions={
           !creatingQuestion && (
             <button
               className="question-create-button"
               type="button"
               onClick={() => {
-                setCreationNotice(null)
+                setQuestionNotice(null)
                 setCreatingQuestion(true)
               }}
             >
@@ -154,7 +168,7 @@ export function TopicPage() {
           )
         }
       >
-        {creationNotice && <p role="status">{creationNotice}</p>}
+        {questionNotice && <p role="status">{questionNotice}</p>}
 
         {creatingQuestion && (
           <div className="question-create-panel">
