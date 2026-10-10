@@ -4,9 +4,15 @@ import type { Question } from '../types/question'
 
 interface QuestionCardProps {
   question: Question
+  onDelete?: (question: Question) => void
+  deleting?: boolean
 }
 
-export function QuestionCard({ question }: QuestionCardProps) {
+export function QuestionCard({
+  question,
+  onDelete,
+  deleting = false,
+}: QuestionCardProps) {
   const [answerVisible, setAnswerVisible] = useState(false)
 
   return (
@@ -27,14 +33,28 @@ export function QuestionCard({ question }: QuestionCardProps) {
         </div>
       )}
 
-      <button
-        className="question-card__toggle"
-        type="button"
-        aria-expanded={answerVisible}
-        onClick={() => setAnswerVisible((visible) => !visible)}
-      >
-        {answerVisible ? 'Hide answer' : 'Reveal answer'}
-      </button>
+      <div className="question-card__actions">
+        <button
+          className="question-card__toggle"
+          type="button"
+          aria-expanded={answerVisible}
+          onClick={() => setAnswerVisible((visible) => !visible)}
+          disabled={deleting}
+        >
+          {answerVisible ? 'Hide answer' : 'Reveal answer'}
+        </button>
+
+        {onDelete && (
+          <button
+            className="question-card__delete"
+            type="button"
+            disabled={deleting}
+            onClick={() => onDelete(question)}
+          >
+            {deleting ? 'Deleting...' : 'Delete'}
+          </button>
+        )}
+      </div>
     </li>
   )
 }
