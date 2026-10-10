@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useOutletContext, useParams } from 'react-router-dom'
 
 import { ApiError } from '../api/errors'
 import { createQuestion } from '../api/questions'
 import { getTopic, getTopicContextTree } from '../api/topics'
+import type { LayoutContext } from '../components/layout/AppLayout'
 import { QuestionForm } from '../components/QuestionForm'
 import type { QuestionFormValues } from '../components/QuestionForm'
 import { QuestionList } from '../components/QuestionList'
@@ -12,6 +13,7 @@ import type { Topic, TopicTree as TopicTreeData } from '../types/topic'
 
 export function TopicPage() {
   const { topicId } = useParams<{ topicId: string }>()
+  const { refreshTopics } = useOutletContext<LayoutContext>()
 
   const [topic, setTopic] = useState<Topic | null>(null)
   const [contextTree, setContextTree] = useState<TopicTreeData | null>(null)
@@ -72,6 +74,7 @@ export function TopicPage() {
 
     setCreatingQuestion(false)
     setQuestionNotice('Question created successfully.')
+    refreshTopics()
     // Remount the list to reuse its existing loading and fetching behavior.
     setQuestionListVersion((version) => version + 1)
 
@@ -87,6 +90,7 @@ export function TopicPage() {
     if (!topic) return
 
     setQuestionNotice('Question deleted successfully.')
+    refreshTopics()
 
     // Refresh tree counts; deleting a question has already succeeded.
     void getTopicContextTree(topic.id)
@@ -100,6 +104,7 @@ export function TopicPage() {
     if (!topic) return
 
     setQuestionNotice('Question updated successfully.')
+    refreshTopics()
 
     // Refresh difficulty counts even when the question stays in this topic.
     void getTopicContextTree(topic.id)
