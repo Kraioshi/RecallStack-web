@@ -4,7 +4,7 @@
 
 .topic-page__questions-panel {
   margin-top: 30px;
-  padding: clamp(16px, 2.1vw, 24px);
+  overflow: hidden;
   border: 1px solid #333650;
   border-radius: 15px;
   background: linear-gradient(
@@ -14,51 +14,40 @@
   );
 }
 
-.topic-page__questions-panel .questions-section {
-  margin: 0;
-  padding: 0;
-}
-
-.topic-page__questions-panel .questions-section__header {
-  padding-bottom: 18px;
-  border-bottom: 1px solid #30334b;
-}
-
-.topic-page__questions-panel .questions-section__header h2 {
-  margin: 0;
-  font-size: 1.45rem;
-  letter-spacing: -0.025em;
-}
-
 .topic-page__add-button {
   white-space: nowrap;
   padding: 10px 15px;
 }
 
+.topic-page__add-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.52;
+  box-shadow: none;
+  transform: none;
+}
+
+.question-create-panel {
+  margin: 16px 15px 0;
+  padding: clamp(17px, 2.4vw, 24px);
+  border: 1px solid #554076;
+  border-radius: 12px;
+  background: linear-gradient(140deg, #242039, #1b1d30);
+}
+
+.question-create-panel h3 {
+  margin: 0 0 18px;
+  color: #f3eaff;
+  font-size: 1.05rem;
+}
+
 .topic-page__notice {
-  margin-top: 15px;
+  margin: 14px 15px 0;
   padding: 10px 14px;
   color: #d9c7ff;
   background: rgba(120, 72, 218, 0.13);
   border: 1px solid #544178;
   border-radius: 9px;
   font-size: 0.87rem;
-}
-
-.topic-page__questions-panel .question-create-panel {
-  border-radius: 12px;
-  background: #1b1d30;
-  border-color: #41415c;
-}
-
-.topic-page__questions-panel .question-list {
-  margin-top: 17px;
-}
-
-.topic-page__questions-panel .question-card {
-  background: #191c2d;
-  border-color: #32364f;
-  border-radius: 11px;
 }
 
 .topic-page__state {
@@ -87,11 +76,12 @@
 }
 
 @media (max-width: 550px) {
-  .topic-page__questions-panel .questions-section__header {
-    align-items: flex-start;
-    flex-wrap: wrap;
+  .topic-page__add-button {
+    padding: 9px 12px;
   }
-  .topic-page__questions-panel .question-create-panel {
-    padding: 14px;
+
+  .question-create-panel {
+    margin: 12px 10px 0;
+    padding: 15px;
   }
 }

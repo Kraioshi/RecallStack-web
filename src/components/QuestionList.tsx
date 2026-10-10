@@ -9,6 +9,7 @@ import {
 import { getTopicTree } from '../api/topics'
 import type { Question } from '../types/question'
 import type { TopicTree } from '../types/topic'
+import { AppIcon } from './AppIcon'
 import { QuestionCard } from './QuestionCard'
 import { QuestionForm } from './QuestionForm'
 import type {
@@ -20,7 +21,8 @@ import './questions.css'
 
 interface QuestionListProps {
   topicId: string
-  actions?: ReactNode
+  actions?: (busy: boolean) => ReactNode
+  interactionLocked?: boolean
   children?: ReactNode
   onQuestionDeleted?: () => void
   onQuestionUpdated?: () => void
@@ -44,6 +46,7 @@ function getTopicOptions(
 export function QuestionList({
   topicId,
   actions,
+  interactionLocked = false,
   children,
   onQuestionDeleted,
   onQuestionUpdated,
@@ -51,10 +54,17 @@ export function QuestionList({
   const [questions, setQuestions] = useState<Question[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [reloadKey, setReloadKey] = useState(0)
   const [deletingQuestionId, setDeletingQuestionId] = useState<string | null>(
     null,
   )
-  const [deleteError, setDeleteError] = useState<string | null>(null)
+  const [confirmingDeleteId, setConfirmingDeleteId] = useState<string | null>(
+    null,
+  )
+  const [deleteError, setDeleteError] = useState<{
+    questionId: string
+    message: string
+  } | null>(null)
   const [editingQuestionId, setEditingQuestionId] = useState<string | null>(
     null,
   )
@@ -72,35 +82,26 @@ export function QuestionList({
         const data = await getQuestionsByTopic(topicId, controller.signal)
         if (!controller.signal.aborted) {
           setQuestions(data)
+          setError(null)
         }
       } catch (error) {
         if (controller.signal.aborted) return
-
-        setError(error instanceof Error ? error.message : 'Unknown error')
+        setError(
+          error instanceof Error ? error.message : 'Could not load questions.',
+        )
       } finally {
-        if (!controller.signal.aborted) {
-          setLoading(false)
-        }
+        if (!controller.signal.aborted) setLoading(false)
       }
     }
 
     void loadQuestions()
     return () => controller.abort()
-  }, [topicId])
+  }, [topicId, reloadKey])
 
   async function handleDeleteQuestion(question: Question): Promise<void> {
-    if (
-      deletingQuestionId !== null ||
-      editingQuestionId !== null ||
-      openingEditorId !== null
-    ) {
+    if (deletingQuestionId !== null || confirmingDeleteId !== question.id) {
       return
     }
-
-    const confirmed = window.confirm(
-      `Delete this question?\n\n${question.question.slice(0, 120)}\n\nThis action cannot be undone.`,
-    )
-    if (!confirmed) return
 
     setDeleteError(null)
     setDeletingQuestionId(question.id)
@@ -112,19 +113,24 @@ export function QuestionList({
       )
       onQuestionDeleted?.()
     } catch (error) {
-      setDeleteError(
-        error instanceof Error ? error.message : 'Could not delete question.',
-      )
+      setDeleteError({
+        questionId: question.id,
+        message:
+          error instanceof Error ? error.message : 'Could not delete question.',
+      })
     } finally {
       setDeletingQuestionId(null)
+      setConfirmingDeleteId(null)
     }
   }
 
   async function handleStartEditing(question: Question): Promise<void> {
     if (
+      interactionLocked ||
       editingQuestionId !== null ||
       openingEditorId !== null ||
-      deletingQuestionId !== null
+      deletingQuestionId !== null ||
+      confirmingDeleteId !== null
     ) {
       return
     }
@@ -174,42 +180,98 @@ export function QuestionList({
   }
 
   const actionsDisabled = Boolean(
-    editingQuestionId || openingEditorId || deletingQuestionId,
+    interactionLocked ||
+    editingQuestionId ||
+    openingEditorId ||
+    deletingQuestionId ||
+    confirmingDeleteId,
   )
 
   return (
     <section className="questions-section" aria-labelledby="questions-heading">
       <div className="questions-section__header">
-        <h2 id="questions-heading">Questions</h2>
-        {actions}
+        <div className="questions-section__title">
+          <span className="questions-section__icon" aria-hidden="true">
+            <AppIcon name="book" size={20} />
+          </span>
+          <h2 id="questions-heading">Questions</h2>
+          {!loading && !error && (
+            <span className="questions-section__count">{questions.length}</span>
+          )}
+        </div>
+        {actions?.(actionsDisabled)}
       </div>
 
       {children}
 
-      {deleteError && (
-        <p className="question-form__error" role="alert">
-          {deleteError}
-        </p>
-      )}
       {editError && (
-        <p className="question-form__error" role="alert">
-          {editError}
+        <p className="question-form__error question-list__error" role="alert">
+          <AppIcon name="alert-circle" size={18} />
+          <span>{editError}</span>
         </p>
       )}
-      {openingEditorId && <p role="status">Loading topics for editing...</p>}
+      {openingEditorId && (
+        <p className="question-list__message" role="status">
+          Loading topics for editing...
+        </p>
+      )}
 
       {loading ? (
-        <p>Loading questions...</p>
+        <div
+          className="question-list__loading"
+          role="status"
+          aria-label="Loading questions"
+        >
+          <span>Loading questions...</span>
+          <div className="question-list__skeleton" aria-hidden="true" />
+          <div className="question-list__skeleton" aria-hidden="true" />
+          <div className="question-list__skeleton" aria-hidden="true" />
+        </div>
       ) : error ? (
-        <p role="alert">{error}</p>
+        <div className="question-list__empty" role="alert">
+          <span className="question-list__empty-icon">
+            <AppIcon name="alert-circle" size={26} />
+          </span>
+          <h3>Could not load questions</h3>
+          <p>{error}</p>
+          <button
+            type="button"
+            className="ui-button ui-button--secondary"
+            onClick={() => {
+              setLoading(true)
+              setError(null)
+              setReloadKey((key) => key + 1)
+            }}
+          >
+            <AppIcon name="refresh" size={17} />
+            Try again
+          </button>
+        </div>
       ) : questions.length === 0 ? (
-        <p>No questions in this topic yet.</p>
+        <div className="question-list__empty">
+          <span className="question-list__empty-icon">
+            <AppIcon name="book" size={26} />
+          </span>
+          <h3>No questions in this topic yet</h3>
+          <p>Add a question to start building your study collection.</p>
+        </div>
       ) : (
-        <ul className="question-list">
-          {questions.map((question) =>
+        <ol className="question-list" role="list">
+          {questions.map((question, index) =>
             editingQuestionId === question.id ? (
-              <li className="question-card" key={question.id}>
-                <h3>Edit question</h3>
+              <li
+                className="question-card question-card--editing"
+                key={question.id}
+              >
+                <div className="question-card__edit-heading">
+                  <span className="question-card__number" aria-hidden="true">
+                    {index + 1}
+                  </span>
+                  <div>
+                    <h3>Edit question</h3>
+                    <p>Update the question or move it to a different topic.</p>
+                  </div>
+                </div>
                 <QuestionForm
                   initialValues={{
                     question: question.question,
@@ -227,14 +289,27 @@ export function QuestionList({
               <QuestionCard
                 key={question.id}
                 question={question}
+                number={index + 1}
                 deleting={deletingQuestionId === question.id}
+                confirmingDelete={confirmingDeleteId === question.id}
+                deleteError={
+                  deleteError?.questionId === question.id
+                    ? deleteError.message
+                    : null
+                }
                 actionsDisabled={actionsDisabled}
                 onEdit={(item) => void handleStartEditing(item)}
+                onRequestDelete={(item) => {
+                  if (actionsDisabled) return
+                  setDeleteError(null)
+                  setConfirmingDeleteId(item.id)
+                }}
+                onCancelDelete={() => setConfirmingDeleteId(null)}
                 onDelete={(item) => void handleDeleteQuestion(item)}
               />
             ),
           )}
-        </ul>
+        </ol>
       )}
     </section>
   )
