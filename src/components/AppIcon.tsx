@@ -16,6 +16,8 @@ type IconName =
   | 'database'
   | 'code'
   | 'refresh'
+  | 'bolt'
+  | 'plus'
 
 interface AppIconProps extends SVGProps<SVGSVGElement> {
   name: IconName
@@ -87,6 +89,8 @@ export function AppIcon({ name, size = 20, ...props }: AppIconProps) {
         <path d="m8 7-5 5 5 5M16 7l5 5-5 5M14 4l-4 16" />
       </>
     ),
+    bolt: <path d="m13.3 2-9.1 11h7l-1 9 9.6-12h-7L13.3 2Z" />,
+    plus: <path d="M12 5v14M5 12h14" />,
     refresh: (
       <>
         <path d="M20 11a8 8 0 1 0-2 6" />
