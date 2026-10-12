@@ -367,3 +367,31 @@ a.topic-overview__tag:hover {
     transition: none;
   }
 }
+
+.topic-overview__manage {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  align-items: center;
+  padding: 0 0 22px;
+}
+.topic-overview__manage .ui-button {
+  font-size: 0.82rem;
+  padding: 9px 12px;
+}
+.topic-overview__delete-button {
+  background: rgba(229, 84, 111, 0.08);
+  border: 1px solid rgba(231, 116, 144, 0.27);
+  color: #ffb2c1;
+}
+.topic-overview__delete-button:hover {
+  background: rgba(229, 84, 111, 0.16);
+  border-color: rgba(231, 116, 144, 0.58);
+  color: #ffdce4;
+}
+@media (max-width: 480px) {
+  .topic-overview__manage .ui-button {
+    flex: 1 1 auto;
+    justify-content: center;
+  }
+}

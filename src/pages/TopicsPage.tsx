@@ -1,5 +1,3 @@
-// noinspection HtmlUnknownAnchorTarget
-
 import { Link, useOutletContext } from 'react-router-dom'
 
 import { AppIcon } from '../components/AppIcon'
@@ -12,7 +10,7 @@ import {
 import './topics.css'
 
 export function TopicsPage() {
-  const { topics, loadingTopics, topicsError, refreshTopics } =
+  const { topics, loadingTopics, topicsError, refreshTopics, openCreateTopic } =
     useOutletContext<LayoutContext>()
   const questionCount = topics.reduce(
     (total, topic) => total + totalQuestions(topic),
@@ -24,7 +22,7 @@ export function TopicsPage() {
       <section className="topics-home__hero">
         <span className="topics-home__eyebrow">YOUR STUDY SPACE</span>
         <h1>
-          Learn. Recall. <span>Skill Issue.</span>
+          Learn. Recall. <span>Grow.</span>
         </h1>
         <p>
           Explore your knowledge base, revisit important concepts, and prepare
@@ -66,6 +64,13 @@ export function TopicsPage() {
             <h2>Topics</h2>
             <p>Select an area to browse its questions and subtopics.</p>
           </div>
+          <button
+            type="button"
+            className="ui-button ui-button--secondary topics-home__create"
+            onClick={() => openCreateTopic()}
+          >
+            <AppIcon name="plus" size={17} /> New root topic
+          </button>
         </div>
 
         {loadingTopics && topics.length === 0 ? (
@@ -84,7 +89,16 @@ export function TopicsPage() {
             </button>
           </div>
         ) : topics.length === 0 ? (
-          <p className="topics-home__state">There are no topics yet.</p>
+          <div className="topics-home__state">
+            <p>There are no topics yet. Create your first topic to begin.</p>
+            <button
+              type="button"
+              className="ui-button ui-button--primary"
+              onClick={() => openCreateTopic()}
+            >
+              <AppIcon name="plus" size={17} /> Create a topic
+            </button>
+          </div>
         ) : (
           <div className="topics-home__grid">
             {topics.map((topic) => (

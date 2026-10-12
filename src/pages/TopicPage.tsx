@@ -17,7 +17,14 @@ import './topicPage.css'
 
 export function TopicPage() {
   const { topicId } = useParams<{ topicId: string }>()
-  const { topics, refreshTopics } = useOutletContext<LayoutContext>()
+  const {
+    topics,
+    refreshTopics,
+    topicMutationVersion,
+    openCreateTopic,
+    openEditTopic,
+    openDeleteTopic,
+  } = useOutletContext<LayoutContext>()
 
   const [topic, setTopic] = useState<Topic | null>(null)
   const [contextTree, setContextTree] = useState<TopicTree | null>(null)
@@ -63,7 +70,7 @@ export function TopicPage() {
 
     void loadTopic(topicId)
     return () => controller.abort()
-  }, [topicId])
+  }, [topicId, topicMutationVersion])
 
   async function refreshContext(
     id: string,
@@ -151,7 +158,14 @@ export function TopicPage() {
 
   return (
     <main className="topic-page">
-      <TopicOverview topic={topic} path={path} selectedTree={selectedTree} />
+      <TopicOverview
+        topic={topic}
+        path={path}
+        selectedTree={selectedTree}
+        onCreateSubtopic={() => openCreateTopic(topic)}
+        onEdit={() => openEditTopic(topic)}
+        onDelete={() => openDeleteTopic(topic)}
+      />
 
       <div className="topic-page__questions-panel">
         <QuestionList
