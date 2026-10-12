@@ -153,3 +153,19 @@
     flex: 1 1 130px;
   }
 }
+
+.topic-dialog__advanced {
+  border-top: 1px solid var(--border);
+  padding-top: 14px;
+}
+
+.topic-dialog__advanced summary {
+  cursor: pointer;
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  user-select: none;
+}
+
+.topic-dialog__advanced .topic-dialog__field {
+  margin-top: 16px;
+}
