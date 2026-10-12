@@ -19,6 +19,7 @@ interface TopicSidebarProps {
   onSearchChange: (search: string) => void
   onNavigate: () => void
   onRetry: () => void
+  onCreateTopic: () => void
 }
 
 interface TreeItemProps {
@@ -130,6 +131,7 @@ export function TopicSidebar({
   onSearchChange,
   onNavigate,
   onRetry,
+  onCreateTopic,
 }: TopicSidebarProps) {
   // A user override wins over default expansion of roots and the active path.
   const [expanded, setExpanded] = useState<Record<string, boolean>>({})
@@ -144,6 +146,15 @@ export function TopicSidebar({
           <AppIcon name="book" size={19} />
         </span>
         <h2>Topics</h2>
+        <button
+          type="button"
+          className="topic-sidebar__create"
+          onClick={onCreateTopic}
+          title="Create root topic"
+          aria-label="Create root topic"
+        >
+          <AppIcon name="plus" size={18} />
+        </button>
       </div>
 
       <label className="topic-sidebar__search" htmlFor="sidebar-topic-search">

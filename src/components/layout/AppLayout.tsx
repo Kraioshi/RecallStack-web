@@ -1,30 +1,54 @@
-// noinspection HtmlUnknownAnchorTarget
-
 import { useEffect, useState } from 'react'
-import { Link, Outlet, useLocation, useMatch } from 'react-router-dom'
+import {
+  Link,
+  Outlet,
+  useLocation,
+  useMatch,
+  useNavigate,
+} from 'react-router-dom'
 
-import { getTopicTree } from '../../api/topics'
-import type { TopicTree } from '../../types/topic'
+import {
+  createTopic,
+  deleteTopic,
+  getTopicTree,
+  updateTopic,
+} from '../../api/topics'
+import type { Topic, TopicTree } from '../../types/topic'
 import { AppIcon } from '../AppIcon'
 import { TopicSidebar } from './TopicSidebar'
+import { findTopicPath } from './topicTreeUtils'
+import { TopicDeleteDialog, TopicEditorDialog } from '../topics/TopicDialogs'
+import type { TopicFormValues } from '../topics/TopicDialogs'
 
 import './layout.css'
+
+type TopicModal =
+  | { mode: 'create'; parent: Topic | null }
+  | { mode: 'edit' | 'delete'; topic: Topic }
 
 export interface LayoutContext {
   topics: TopicTree[]
   loadingTopics: boolean
   topicsError: string | null
   refreshTopics: () => void
+  topicMutationVersion: number
+  openCreateTopic: (parent?: Topic | null) => void
+  openEditTopic: (topic: Topic) => void
+  openDeleteTopic: (topic: Topic) => void
 }
 
 /** Shared navigation and topic data stay mounted while routes change. */
 export function AppLayout() {
   const topicId = useMatch('/topics/:topicId')?.params.topicId
   const location = useLocation()
+  const navigate = useNavigate()
   const [topics, setTopics] = useState<TopicTree[]>([])
   const [loadingTopics, setLoadingTopics] = useState(true)
   const [topicsError, setTopicsError] = useState<string | null>(null)
   const [reloadKey, setReloadKey] = useState(0)
+  const [topicMutationVersion, setTopicMutationVersion] = useState(0)
+  const [modal, setModal] = useState<TopicModal | null>(null)
+  const [topicNotice, setTopicNotice] = useState<string | null>(null)
   const [search, setSearch] = useState('')
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
@@ -61,6 +85,72 @@ export function AppLayout() {
 
   const refreshTopics = () => setReloadKey((key) => key + 1)
   const onTopicRoute = location.pathname.startsWith('/topics/')
+
+  function openCreateTopic(parent: Topic | null = null) {
+    setSidebarOpen(false)
+    setTopicNotice(null)
+    setModal({ mode: 'create', parent })
+  }
+
+  function openEditTopic(topic: Topic) {
+    setTopicNotice(null)
+    setModal({ mode: 'edit', topic })
+  }
+
+  function openDeleteTopic(topic: Topic) {
+    setTopicNotice(null)
+    setModal({ mode: 'delete', topic })
+  }
+
+  function afterMutation() {
+    refreshTopics()
+    setTopicMutationVersion((version) => version + 1)
+  }
+
+  async function saveTopic(values: TopicFormValues) {
+    if (!modal) return
+    if (modal.mode === 'create') {
+      const created = await createTopic({
+        ...values,
+        parentId: modal.parent?.id ?? null,
+      })
+      setModal(null)
+      afterMutation()
+      setTopicNotice(`Topic “${created.name}” created.`)
+      navigate(`/topics/${created.id}`)
+    } else if (modal.mode === 'edit') {
+      // PATCH rather than PUT: changing the name does not change the parent.
+      const updated = await updateTopic(modal.topic.id, values)
+      setModal(null)
+      afterMutation()
+      setTopicNotice(`Topic “${updated.name}” updated.`)
+    }
+  }
+
+  async function confirmDeleteTopic() {
+    if (!modal || modal.mode !== 'delete') return
+    const deleted = modal.topic
+    await deleteTopic(deleted.id)
+    setModal(null)
+    afterMutation()
+    navigate(deleted.parent_id ? `/topics/${deleted.parent_id}` : '/')
+    setTopicNotice(`Topic “${deleted.name}” deleted.`)
+  }
+
+  const deletionTree =
+    modal?.mode === 'delete'
+      ? findTopicPath(topics, modal.topic.id).at(-1)
+      : null
+  const deleteBlockReason =
+    modal?.mode !== 'delete'
+      ? null
+      : !deletionTree
+        ? 'Cannot verify topic contents. Refresh the topic list before deleting.'
+        : deletionTree.children.length > 0
+          ? 'Delete its subtopics first. Parent topics cannot be deleted while they have children.'
+          : deletionTree.question_counts.total > 0
+            ? 'Delete or move its questions first to avoid losing study material.'
+            : null
 
   return (
     <div className="app-shell">
@@ -141,10 +231,23 @@ export function AppLayout() {
             onSearchChange={setSearch}
             onNavigate={() => setSidebarOpen(false)}
             onRetry={refreshTopics}
+            onCreateTopic={() => openCreateTopic()}
           />
         </aside>
 
         <div id="main-content" className="app-shell__content" tabIndex={-1}>
+          {topicNotice && (
+            <div className="topic-mutation-notice" role="status">
+              <span>{topicNotice}</span>
+              <button
+                type="button"
+                onClick={() => setTopicNotice(null)}
+                aria-label="Dismiss notification"
+              >
+                <AppIcon name="close" size={16} />
+              </button>
+            </div>
+          )}
           <Outlet
             context={
               {
@@ -152,11 +255,42 @@ export function AppLayout() {
                 loadingTopics,
                 topicsError,
                 refreshTopics,
+                topicMutationVersion,
+                openCreateTopic,
+                openEditTopic,
+                openDeleteTopic,
               } satisfies LayoutContext
             }
           />
         </div>
       </div>
+      {modal?.mode === 'create' && (
+        <TopicEditorDialog
+          key={`create-${modal.parent?.id ?? 'root'}`}
+          mode="create"
+          parent={modal.parent}
+          onSubmit={saveTopic}
+          onCancel={() => setModal(null)}
+        />
+      )}
+      {modal?.mode === 'edit' && (
+        <TopicEditorDialog
+          key={`edit-${modal.topic.id}`}
+          mode="edit"
+          topic={modal.topic}
+          onSubmit={saveTopic}
+          onCancel={() => setModal(null)}
+        />
+      )}
+      {modal?.mode === 'delete' && (
+        <TopicDeleteDialog
+          key={`delete-${modal.topic.id}`}
+          topic={modal.topic}
+          blockingReason={deleteBlockReason}
+          onConfirm={confirmDeleteTopic}
+          onCancel={() => setModal(null)}
+        />
+      )}
     </div>
   )
 }

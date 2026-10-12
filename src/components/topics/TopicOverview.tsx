@@ -10,6 +10,9 @@ interface TopicOverviewProps {
   topic: Topic
   path: TopicTree[]
   selectedTree: TopicTree | null
+  onCreateSubtopic: () => void
+  onEdit: () => void
+  onDelete: () => void
 }
 
 /** Topic counts describe only questions attached to this topic, not its children. */
@@ -17,6 +20,9 @@ export function TopicOverview({
   topic,
   path,
   selectedTree,
+  onCreateSubtopic,
+  onEdit,
+  onDelete,
 }: TopicOverviewProps) {
   const counts = selectedTree?.question_counts
   const descendantQuestions = selectedTree
@@ -83,6 +89,30 @@ export function TopicOverview({
             )}
           </div>
         </div>
+      </div>
+
+      <div className="topic-overview__manage" aria-label="Topic management">
+        <button
+          type="button"
+          className="ui-button ui-button--secondary"
+          onClick={onCreateSubtopic}
+        >
+          <AppIcon name="plus" size={17} /> Add subtopic
+        </button>
+        <button
+          type="button"
+          className="ui-button ui-button--secondary"
+          onClick={onEdit}
+        >
+          <AppIcon name="edit" size={17} /> Edit topic
+        </button>
+        <button
+          type="button"
+          className="ui-button topic-overview__delete-button"
+          onClick={onDelete}
+        >
+          <AppIcon name="trash" size={17} /> Delete
+        </button>
       </div>
 
       <div className="topic-overview__summary">

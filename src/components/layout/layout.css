@@ -210,10 +210,8 @@
   flex: 1;
 }
 .sidebar-tree__children {
-  --guide-left: 19px;
   position: relative;
 }
-
 .sidebar-tree__children::before {
   content: '';
   position: absolute;
@@ -501,4 +499,46 @@
   .app-header__search {
     transition: none;
   }
+}
+
+/* Topic management is available from the sidebar on every page. */
+.topic-sidebar__create {
+  margin-left: auto;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #574775;
+  border-radius: 9px;
+  color: #d9c1ff;
+  background: #29213f;
+}
+.topic-sidebar__create:hover {
+  background: #382854;
+  border-color: var(--accent-border);
+}
+.topic-mutation-notice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 18px;
+  padding: 12px 15px;
+  border: 1px solid #5e4c85;
+  border-radius: 10px;
+  background: rgba(114, 65, 187, 0.17);
+  color: #eadfff;
+  font-size: 0.9rem;
+}
+.topic-mutation-notice button {
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 6px;
+  padding: 5px;
+  background: transparent;
+  color: inherit;
+}
+.topic-mutation-notice button:hover {
+  background: rgba(255, 255, 255, 0.08);
 }
