@@ -210,6 +210,7 @@
   flex: 1;
 }
 .sidebar-tree__children {
+  --guide-left: 19px;
   position: relative;
 }
 .sidebar-tree__children::before {
