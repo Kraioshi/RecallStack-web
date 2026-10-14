@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest'
-
-import { totalQuestions } from '../../src/components/layout/topicTreeUtils'
+import {
+  totalQuestions,
+  totalSubtopics,
+} from '../../src/components/layout/topicTreeUtils'
 import type { TopicTree } from '../../src/types/topic'
+import { makeTopicTree } from '../fixtures/topics'
 
 describe('totalQuestions', () => {
   it('returns direct question count when topic has no children', () => {
@@ -76,5 +79,41 @@ describe('totalQuestions', () => {
 
     // Assert
     expect(result).toBe(6)
+  })
+})
+
+describe('totalSubtopics', () => {
+  it('returns zero when topic has no children', () => {
+    // Arrange
+    const topic = makeTopicTree()
+
+    // Act
+    const result = totalSubtopics(topic)
+
+    // Assert
+    expect(result).toBe(0)
+  })
+
+  it('counts all nested descendants', () => {
+    // Arrange
+    const topic = makeTopicTree({
+      name: 'Python',
+      children: [
+        makeTopicTree({
+          name: 'Frameworks',
+          children: [
+            makeTopicTree({ name: 'FastAPI' }),
+            makeTopicTree({ name: 'Django' }),
+          ],
+        }),
+        makeTopicTree({ name: 'Asyncio' }),
+      ],
+    })
+
+    // Act
+    const result = totalSubtopics(topic)
+
+    // Assert
+    expect(result).toBe(4)
   })
 })
