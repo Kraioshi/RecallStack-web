@@ -11,7 +11,8 @@
     "format:check": "prettier --check .",
     "preview": "vite preview",
     "test": "vitest",
-    "test:run": "vitest run"
+    "test:run": "vitest run",
+    "typecheck:tests": "tsc -p tsconfig.test.json"
   },
   "dependencies": {
     "react": "^19.2.8",
